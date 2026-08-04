@@ -1,0 +1,50 @@
+{
+  "name": "interview-question-cli",
+  "version": "0.1.0",
+  "description": "根据简历 + JD 自动生成个性化面试问题（Interview Question Generator CLI）",
+  "type": "module",
+  "bin": {
+    "iq": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "files": [
+    "dist",
+    "examples",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "demo": "tsx src/index.ts generate --demo",
+    "demo:build": "node dist/index.js generate --demo"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "interview",
+    "cli",
+    "resume",
+    "job-description",
+    "ai",
+    "deepseek",
+    "openai",
+    "interview-questions"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@ai-sdk/openai": "^4.0.28",
+    "ai": "^7.0.50",
+    "chalk": "^6.0.0",
+    "commander": "^15.0.0",
+    "dotenv": "^17.4.2"
+  },
+  "devDependencies": {
+    "@types/commander": "^2.12.0",
+    "@types/node": "^26.1.2",
+    "tsx": "^4.23.5",
+    "typescript": "^7.0.2"
+  }
+}
