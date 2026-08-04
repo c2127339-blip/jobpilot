@@ -2,7 +2,7 @@
  * 构建 LLM 提示词（system + user）。
  * 约束 LLM 只基于简历/JD 中真实出现的内容出题，避免编造。
  */
-import type { Category, GeneratedQuestions, GeneratedResume, Question } from './types.js';
+import type { AnswerResult, Category, GeneratedQuestions, GeneratedResume, Question } from './types.js';
 
 /** 合法的分类 key */
 const CATEGORY_KEYS: Category[] = ['project', 'tech', 'behavior', 'fit'];
@@ -290,4 +290,58 @@ export function parseResumeJson(raw: string): GeneratedResume {
   }
 
   return { title: data.title, header: data.header, summary: data.summary, sections, gapNotes };
+}
+
+/* ==================== 面试问题详细答案 ==================== */
+
+/** 答案生成的 system 提示词 */
+export function buildAnswerSystemPrompt(): string {
+  return `你是一名资深的前端技术面试官。
+你的任务：针对求职者的【面试问题】，结合【职位描述(J)】给出一个**完整、专业的中文参考回答**。
+
+要求：
+1. 回答要有条理，可分点（1. 2. 3.）论述。
+2. 结合 JD 中的技术栈和岗位要求，让回答显得贴合岗位。
+3. 回答要具体、可执行，像一位有经验的候选人当场作答，不要泛泛而谈。
+4. 长度控制在 150-300 字，重点突出。
+
+输出要求：
+- 严格输出一个 JSON 对象（不要 markdown 代码块包裹）。
+- JSON 结构如下：
+{
+  "answer": "完整的参考回答（纯文本，可含换行和编号）"
+}`;
+}
+
+/** 答案生成的 user 提示词 */
+export function buildAnswerUserPrompt(question: string, jd: string): string {
+  return `请为下面的面试问题生成参考回答。
+
+【面试问题】
+${question}
+
+【职位描述(J)】
+${jd}
+
+请按 system 提示的要求输出 JSON。`;
+}
+
+/**
+ * 校验并解析 LLM 返回的答案 JSON。
+ * @throws Error 解析或结构校验失败时
+ */
+export function parseAnswerJson(raw: string): AnswerResult {
+  const json = extractJson(raw);
+  let data: unknown;
+  try {
+    data = JSON.parse(json);
+  } catch (err) {
+    throw new Error(
+      `LLM 返回内容不是合法 JSON，无法解析。原始内容片段：\n${json.slice(0, 300)}`,
+    );
+  }
+  if (!isRecord(data) || typeof data.answer !== 'string' || !data.answer.trim()) {
+    throw new Error('JSON 缺少字符串字段 answer');
+  }
+  return { answer: data.answer };
 }

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JobPilot · 求职助手</title>
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <header class="hero">
+    <h1>✈️ JobPilot</h1>
+    <p>上传你的简历与目标岗位 JD，一键生成匹配简历 + 模拟面试问题及答案</p>
+  </header>
+
+  <main class="container">
+    <!-- 输入区 -->
+    <section class="card input-panel">
+      <div class="field">
+        <label for="jd">岗位 JD / 职位要求 <span class="hint">（可粘贴文本或上传 .txt/.md 文件）</span></label>
+        <textarea id="jd" rows="6" placeholder="粘贴目标岗位的职位描述和职位要求……"></textarea>
+        <div class="file-row">
+          <span class="file-label">或上传文件：</span>
+          <input type="file" id="jd-file" accept=".txt,.md,.markdown" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="resume">简历信息 <span class="hint">（选填，粘贴或上传。留空则生成「理想候选人模板」）</span></label>
+        <textarea id="resume" rows="6" placeholder="粘贴你的基本简历信息（姓名、技能、项目经历……）"></textarea>
+        <div class="file-row">
+          <span class="file-label">或上传文件：</span>
+          <input type="file" id="resume-file" accept=".txt,.md,.markdown" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="api-key">DeepSeek API Key</label>
+        <input type="password" id="api-key" placeholder="sk-……（只在浏览器内存中，不会上传）" />
+      </div>
+
+      <div class="actions">
+        <button id="btn-resume" class="btn btn-primary">生成简历</button>
+        <button id="btn-questions" class="btn btn-secondary">生成面试问题</button>
+        <span class="loading" id="loading" hidden>⏳ 生成中，请稍候…</span>
+      </div>
+    </section>
+
+    <!-- 结果区 -->
+    <section class="card result-panel" id="result-panel" hidden>
+      <div class="tabs">
+        <button class="tab active" data-tab="resume-tab">📄 简历</button>
+        <button class="tab" data-tab="questions-tab">🎯 面试问题</button>
+      </div>
+      <div id="resume-tab" class="tab-content active"></div>
+      <div id="questions-tab" class="tab-content"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    JobPilot · 你的 key 只在本浏览器使用 · 开源项目
+  </footer>
+
+  <script src="bundle.js"></script>
+</body>
+</html>

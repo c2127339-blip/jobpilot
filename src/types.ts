@@ -57,3 +57,9 @@ export interface GeneratedResume {
   /** 与 JD 的匹配度说明 / 待补充项 */
   gapNotes: string[];
 }
+
+/** 面试问题的详细答案 */
+export interface AnswerResult {
+  /** 完整参考回答（1-2 段中文） */
+  answer: string;
+}

@@ -19,7 +19,9 @@
     "start": "node dist/index.js",
     "demo": "tsx src/index.ts questions --demo",
     "demo:resume": "tsx src/index.ts resume --demo",
-    "demo:build": "node dist/index.js questions --demo"
+    "demo:build": "node dist/index.js questions --demo",
+    "web:build": "esbuild web/src/main.ts --bundle --outfile=web/bundle.js --format=iife --platform=browser",
+    "web": "node server.ts"
   },
   "engines": {
     "node": ">=18"
