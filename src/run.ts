@@ -28,7 +28,7 @@ function resolveApiKey(options: CommonOptions): string {
   if (!apiKey) {
     throw new Error(
       '未提供 API key。请通过 --key 参数、环境变量 DEEPSEEK_API_KEY 或 .env 文件提供；\n' +
-        '或使用 --demo 模式免 key 体验（iq questions --demo / iq resume --demo）。',
+        '或使用 --demo 模式免 key 体验（jp questions --demo / jp resume --demo）。',
     );
   }
   return apiKey;
@@ -77,8 +77,8 @@ export async function runQuestions(input: {
 
   if (!input.resume || !input.jd) {
     throw new Error(
-      '请提供简历和 JD 文件路径：iq questions resume.md jd.md\n' +
-        '或使用演示模式：iq questions --demo',
+      '请提供简历和 JD 文件路径：jp questions resume.md jd.md\n' +
+        '或使用演示模式：jp questions --demo',
     );
   }
 
@@ -134,7 +134,7 @@ export async function runResume(input: {
   }
 
   if (!input.jd) {
-    throw new Error('请提供 JD 文件路径：iq resume jd.md');
+    throw new Error('请提供 JD 文件路径：jp resume jd.md');
   }
   const jdPath: string = input.jd;
 

@@ -1,10 +1,10 @@
 {
-  "name": "interview-question-cli",
+  "name": "jobpilot",
   "version": "0.2.0",
-  "description": "根据 JD 自动生成定制简历 + 面试问题（Interview Question CLI）",
+  "description": "Tailor your resume and ace the interview — 根据岗位 JD 自动生成匹配简历 + 模拟面试问题",
   "type": "module",
   "bin": {
-    "iq": "./dist/index.js"
+    "jp": "./dist/index.js"
   },
   "main": "./dist/index.js",
   "files": [

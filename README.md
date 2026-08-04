@@ -1,16 +1,16 @@
-# Interview Question CLI（iq）
+# JobPilot（jp）
 
 > 面向求职者的 CLI 工具：根据**岗位 JD** 自动生成**定制简历**，并据此生成**模拟面试问题**——自带「为什么问」和「参考答案思路」。
 
-![demo](https://via.placeholder.com/800x300?text=iq+resume+%2F+iq+questions+终端演示截图)
+![demo](https://via.placeholder.com/800x300?text=jp+resume+%2F+jp+questions+终端演示截图)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 ![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen)
 
 投简历前最费时的是两件事：**把简历改得贴合 JD**，以及**猜面试官会问什么**。这个工具用大模型把这两件都自动化了：
 
-- `iq resume <jd>` —— 从 JD 生成一份**理想候选人简历模板**，或基于你的**现有简历合并改写**成匹配版
-- `iq questions <resume> <jd>` —— 生成 12–15 个贴合你真实情况的面试问题，每题附「为什么问 + 参考答案思路」
+- `jp resume <jd>` —— 从 JD 生成一份**理想候选人简历模板**，或基于你的**现有简历合并改写**成匹配版
+- `jp questions <resume> <jd>` —— 生成 12–15 个贴合你真实情况的面试问题，每题附「为什么问 + 参考答案思路」
 
 相当于请了一位 24 小时在线的**求职顾问 + 模拟面试官**。
 
@@ -32,13 +32,13 @@
 
 ```bash
 # 面试问题演示
-iq questions --demo
+jp questions --demo
 
 # 简历演示（模板）
-iq resume --demo
+jp resume --demo
 
 # 简历演示（基于示例简历合并改写）
-iq resume --demo examples/resume.md
+jp resume --demo examples/resume.md
 ```
 
 ### 2. 真实使用
@@ -47,21 +47,21 @@ iq resume --demo examples/resume.md
 # 准备文件：jd.md（目标岗位 JD）、resume.md（你的简历，可选）
 
 # 从 JD 生成简历模板（联系方式为占位符，需自行替换）
-iq resume jd.md --out resume-matched.md
+jp resume jd.md --out resume-matched.md
 
 # 基于你的现有简历，合并改写成匹配版（推荐）
-iq resume jd.md resume.md --out resume-matched.md
+jp resume jd.md resume.md --out resume-matched.md
 
 # 用生成的简历 + JD 生成面试问题
-iq questions resume-matched.md jd.md --out interview-questions.md
+jp questions resume-matched.md jd.md --out interview-questions.md
 ```
 
-> 首次运行后可用 `npm link` 将 `iq` 安装为全局命令。
+> 首次运行后可用 `npm link` 将 `jp` 安装为全局命令。
 
 ## 命令一览
 
 ```
-iq resume [jd] [resume]                生成简历
+jp resume [jd] [resume]                生成简历
   --demo                               演示模式：内置示例数据，无需 API key
   --key <key>                          API key（默认读 .env 或 DEEPSEEK_API_KEY）
   --provider <deepseek|openai>         模型提供商，默认 deepseek
@@ -69,7 +69,7 @@ iq resume [jd] [resume]                生成简历
   # 无 [resume] → 从 JD 生成理想候选人模板
   # 有 [resume] → 保留真实事实，按 JD 关键字改写/强调匹配
 
-iq questions [resume] [jd]            生成面试问题
+jp questions [resume] [jd]            生成面试问题
   --demo / --key / --provider / --out  （同上）
 ```
 
@@ -121,10 +121,10 @@ JD (jd.md) ────┤── 合并改写（有 resume 参数）──► LL
 ## FAQ
 
 **Q：没有 API key 能用吗？**
-可以。`iq questions --demo` / `iq resume --demo` 用内置演示数据 + 预置输出完整跑通流程，无需任何 key。
+可以。`jp questions --demo` / `jp resume --demo` 用内置演示数据 + 预置输出完整跑通流程，无需任何 key。
 
-**Q：`iq resume` 生成的简历能直接投吗？**
-`iq resume jd.md` 生成的是**理想候选人模板**，联系方式为占位符，需要你替换为真实信息后再投；`iq resume jd.md resume.md` 基于你的真实简历改写，更贴近实际，但仍建议人工校对后再投递。
+**Q：`jp resume` 生成的简历能直接投吗？**
+`jp resume jd.md` 生成的是**理想候选人模板**，联系方式为占位符，需要你替换为真实信息后再投；`jp resume jd.md resume.md` 基于你的真实简历改写，更贴近实际，但仍建议人工校对后再投递。
 
 **Q：会编造我的经历吗？**
 不会。合并改写模式的 Prompt 明确禁止虚构经历，只优化结构、措辞与匹配重点；JD 要求但简历缺失的点会写进「待补充项」，由你自己决定是否补充。

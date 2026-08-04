@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * interview-question-cli 入口（双命令）。
+ * JobPilot（jp）入口（双命令）。
  * 用法：
- *   iq resume <jd> [resume] [--demo | --key | --provider | --out]  生成简历
- *   iq questions [resume] [jd] [--demo | --key | --provider | --out] 生成面试问题
+ *   jp resume <jd> [resume] [--demo | --key | --provider | --out]  生成简历
+ *   jp questions [resume] [jd] [--demo | --key | --provider | --out] 生成面试问题
  */
 import { parseArgs } from './args.js';
 import { runResume, runQuestions } from './run.js';

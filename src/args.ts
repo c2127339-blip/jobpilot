@@ -42,9 +42,9 @@ export function parseArgs(argv: string[]): CliArgs {
   const program = new Command();
 
   program
-    .name('iq')
+    .name('jp')
     .description(
-      'Interview Question CLI：根据 JD 生成定制简历 + 面试问题',
+      'JobPilot：根据 JD 生成定制简历 + 面试问题',
     )
     .version('0.2.0');
 
@@ -81,7 +81,7 @@ export function parseArgs(argv: string[]): CliArgs {
 
   // commander 的 parse 约定 argv 为 [execPath, 脚本路径, ...实际参数]，
   // 因此用占位前缀补齐前两项，再把真实参数拼在后面。
-  program.parse([process.execPath, 'iq', ...argv]);
+  program.parse([process.execPath, 'jp', ...argv]);
 
   // 子命令名会出现在 program.args 中（.parse 后），据此取出位置参数
   if (invoked === 'resume') {
