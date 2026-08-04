@@ -2,7 +2,7 @@
 
 > 面向求职者的 CLI 工具：根据**岗位 JD** 自动生成**定制简历**，并据此生成**模拟面试问题**——自带「为什么问」和「参考答案思路」。
 
-![demo](https://via.placeholder.com/800x300?text=jp+resume+%2F+jp+questions+终端演示截图)
+![jp questions --demo](docs/demo.png)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 ![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen)
