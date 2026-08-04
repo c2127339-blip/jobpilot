@@ -50,10 +50,8 @@ export function parseArgs(argv: string[]): CliArgs {
 
   // 记录用户实际触发的子命令
   let invoked: 'resume' | 'questions' | undefined;
-  // 记录子命令的原始位置参数（commander 会把参数也当作选项处理）
-  const positional: Record<string, string[]> = { resume: [], questions: [] };
 
-  program
+  const resumeCmd = program
     .command('resume')
     .description('根据 JD 生成简历（有第二个参数则基于现有简历合并改写，否则生成模板）')
     .argument('[jd]', 'JD 文件路径（.txt / .md）')
@@ -66,7 +64,7 @@ export function parseArgs(argv: string[]): CliArgs {
       invoked = 'resume';
     });
 
-  program
+  const questionsCmd = program
     .command('questions')
     .description('根据简历 + JD 生成面试问题')
     .argument('[resume]', '简历文件路径（.txt / .md）')
@@ -83,24 +81,20 @@ export function parseArgs(argv: string[]): CliArgs {
   // 因此用占位前缀补齐前两项，再把真实参数拼在后面。
   program.parse([process.execPath, 'jp', ...argv]);
 
-  // 子命令名会出现在 program.args 中（.parse 后），据此取出位置参数
+  // 各子命令自己的 .args 已正确消费选项，只含位置参数
   if (invoked === 'resume') {
-    const args = program.args.filter((a) => a !== 'resume');
-    const opts = program.commands[0].opts() as CommonOptions;
     return {
       command: 'resume',
-      jd: args[0] as string | undefined,
-      resume: args[1] as string | undefined,
-      options: opts,
+      jd: resumeCmd.args[0] as string | undefined,
+      resume: resumeCmd.args[1] as string | undefined,
+      options: resumeCmd.opts() as CommonOptions,
     };
   }
 
-  const args = program.args.filter((a) => a !== 'questions');
-  const opts = program.commands[1].opts() as CommonOptions;
   return {
     command: 'questions',
-    resume: args[0] as string | undefined,
-    jd: args[1] as string | undefined,
-    options: opts,
+    resume: questionsCmd.args[0] as string | undefined,
+    jd: questionsCmd.args[1] as string | undefined,
+    options: questionsCmd.opts() as CommonOptions,
   };
 }
