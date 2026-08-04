@@ -1,43 +1,59 @@
 /**
- * 生成命令的主流程：组装输入 → 调用 LLM（或演示模式）→ 解析 → 输出。
+ * 各命令的主流程：组装输入 → 调用 LLM（或演示模式）→ 解析 → 输出。
  */
 import 'dotenv/config';
 import { readInputFile, FileReadError } from './read-input.js';
-import { buildSystemPrompt, buildUserPrompt, parseQuestionsJson } from './prompt.js';
+import {
+  buildSystemPrompt,
+  buildUserPrompt,
+  parseQuestionsJson,
+  buildResumeSystemPrompt,
+  buildResumeUserPrompt,
+  parseResumeJson,
+} from './prompt.js';
 import { generateWithLLM, generateWithMock, resolveProviderConfig } from './llm.js';
-import { DEMO_RESUME, DEMO_JD, DEMO_LLM_OUTPUT } from './demo-data.js';
-import { renderTerminal, saveMarkdown } from './output.js';
-import type { GenerateOptions } from './args.js';
-import type { GeneratedQuestions } from './types.js';
+import {
+  DEMO_RESUME,
+  DEMO_JD,
+  DEMO_LLM_OUTPUT,
+  DEMO_RESUME_TEMPLATE_OUTPUT,
+  DEMO_RESUME_MERGED_OUTPUT,
+} from './demo-data.js';
+import type { CommonOptions } from './args.js';
+import type { GeneratedQuestions, GeneratedResume } from './types.js';
 
-export interface RunInput {
-  resume?: string;
-  jd?: string;
-  options: GenerateOptions;
+/** 取 API key：--key 参数 > 环境变量；无则抛错 */
+function resolveApiKey(options: CommonOptions): string {
+  const apiKey = options.key ?? process.env.DEEPSEEK_API_KEY;
+  if (!apiKey) {
+    throw new Error(
+      '未提供 API key。请通过 --key 参数、环境变量 DEEPSEEK_API_KEY 或 .env 文件提供；\n' +
+        '或使用 --demo 模式免 key 体验（iq questions --demo / iq resume --demo）。',
+    );
+  }
+  return apiKey;
 }
 
-/** 演示模式主入口（也供 examples 生成使用） */
-export async function runDemo(): Promise<GeneratedQuestions> {
+/* ==================== 面试问题（questions） ==================== */
+
+/** 面试问题 · 演示模式 */
+export async function runQuestionsDemo(): Promise<GeneratedQuestions> {
   const raw = await generateWithMock(DEMO_LLM_OUTPUT);
   return parseQuestionsJson(raw);
 }
 
-/** 真实模式主入口 */
-async function runReal(resumePath: string, jdPath: string, options: GenerateOptions): Promise<GeneratedQuestions> {
+/** 面试问题 · 真实模式 */
+async function runQuestionsReal(
+  resumePath: string,
+  jdPath: string,
+  options: CommonOptions,
+): Promise<GeneratedQuestions> {
   const [resume, jd] = await Promise.all([
     readInputFile(resumePath),
     readInputFile(jdPath),
   ]);
 
-  const apiKey = options.key ?? process.env.DEEPSEEK_API_KEY;
-  if (!apiKey) {
-    throw new Error(
-      '未提供 API key。请通过 --key 参数、环境变量 DEEPSEEK_API_KEY 或 .env 文件提供；\n' +
-        '或使用 --demo 模式免 key 体验（iq generate --demo）。',
-    );
-  }
-
-  const config = resolveProviderConfig(options.provider, apiKey);
+  const config = resolveProviderConfig(options.provider, resolveApiKey(options));
   const system = buildSystemPrompt();
   const user = buildUserPrompt(resume, jd);
   const raw = await generateWithLLM(system, user, config);
@@ -45,33 +61,87 @@ async function runReal(resumePath: string, jdPath: string, options: GenerateOpti
 }
 
 /**
- * 执行 generate 命令。
- * @returns 生成的面试问题（供测试/复用）
+ * 执行 questions 命令。
+ * @returns 生成的面试问题
  */
-export async function runGenerate(input: RunInput): Promise<GeneratedQuestions> {
+export async function runQuestions(input: {
+  resume?: string;
+  jd?: string;
+  options: CommonOptions;
+}): Promise<GeneratedQuestions> {
   const { options } = input;
 
   if (options.demo) {
-    return runDemo();
+    return runQuestionsDemo();
   }
 
   if (!input.resume || !input.jd) {
     throw new Error(
-      '请提供简历和 JD 文件路径：iq generate resume.md jd.md\n' +
-        '或使用演示模式：iq generate --demo',
+      '请提供简历和 JD 文件路径：iq questions resume.md jd.md\n' +
+        '或使用演示模式：iq questions --demo',
     );
   }
 
-  try {
-    return await runReal(input.resume, input.jd, options);
-  } catch (err) {
-    if (err instanceof FileReadError) throw err;
-    throw err;
-  }
+  return runQuestionsReal(input.resume, input.jd, options);
 }
 
-/** 从输入组装出可保存的文件名（生成默认输出名用） */
-export function defaultOutName(resumePath: string, jdPath: string): string {
-  const base = (p: string) => p.replace(/\.[^.]+$/, '').replace(/[\\/]/g, '-');
-  return `${base(resumePath)}__vs__${base(jdPath)}-questions.md`;
+/* ==================== 简历（resume） ==================== */
+
+/**
+ * 简历 · 演示模式。
+ * @param withResume true=合并改写（基于示例简历），false=生成模板
+ */
+export async function runResumeDemo(withResume: boolean): Promise<GeneratedResume> {
+  const mock = withResume ? DEMO_RESUME_MERGED_OUTPUT : DEMO_RESUME_TEMPLATE_OUTPUT;
+  const raw = await generateWithMock(mock);
+  return parseResumeJson(raw);
 }
+
+/**
+ * 简历 · 真实模式。
+ * @param jdPath JD 文件路径（必需）
+ * @param existingResumePath 现有简历路径（可选：有此则合并改写，否则生成模板）
+ */
+async function runResumeReal(
+  jdPath: string,
+  existingResumePath: string | undefined,
+  options: CommonOptions,
+): Promise<GeneratedResume> {
+  const jd = await readInputFile(jdPath);
+  const isMerge = Boolean(existingResumePath);
+  const existingResume = existingResumePath ? await readInputFile(existingResumePath) : undefined;
+
+  const config = resolveProviderConfig(options.provider, resolveApiKey(options));
+  const system = buildResumeSystemPrompt(isMerge);
+  const user = buildResumeUserPrompt(jd, existingResume);
+  const raw = await generateWithLLM(system, user, config);
+  return parseResumeJson(raw);
+}
+
+/**
+ * 执行 resume 命令。
+ * @returns 生成的简历
+ */
+export async function runResume(input: {
+  jd?: string;
+  resume?: string;
+  options: CommonOptions;
+}): Promise<GeneratedResume> {
+  const { options } = input;
+
+  if (options.demo) {
+    return runResumeDemo(Boolean(input.resume));
+  }
+
+  if (!input.jd) {
+    throw new Error('请提供 JD 文件路径：iq resume jd.md');
+  }
+  const jdPath: string = input.jd;
+
+  return runResumeReal(jdPath, input.resume, options);
+}
+
+/* ==================== 工具 ==================== */
+
+/** 示例数据：供 --demo 返回给 questions 使用（兼容旧接口） */
+export { DEMO_RESUME, DEMO_JD };

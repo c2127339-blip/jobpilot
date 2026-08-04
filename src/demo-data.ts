@@ -158,3 +158,97 @@ export const DEMO_LLM_OUTPUT = JSON.stringify(
   null,
   2,
 );
+
+/**
+ * 预置输出：演示模式「简历模板」—— 从 JD 生成的理想候选人简历模板（全部占位符）。
+ */
+export const DEMO_RESUME_TEMPLATE_OUTPUT = JSON.stringify(
+  {
+    title: '前端开发实习生 · 理想候选人简历模板',
+    header: '【姓名】  |  【电话】  |  【邮箱】  |  【城市】',
+    summary:
+      '信息与计算科学专业本科在读，熟悉 HTML/CSS/JavaScript 与 ES6+ 语法，掌握 Vue / React 组件化开发。具备完整的校园项目经验，熟悉前后端接口联调与 Git 团队协作，能够快速投入真实业务开发。',
+    sections: [
+      {
+        heading: '教育背景',
+        content: [
+          '【大学名称】· 信息与计算科学专业，【入学年份】-【预计毕业年份】',
+          '相关课程：数据结构与算法、数据库原理、软件工程、Web 前端开发',
+        ],
+      },
+      {
+        heading: '技能栈',
+        content: [
+          '前端开发：HTML、CSS、JavaScript（ES6+）、TypeScript【按需填写】',
+          '框架与工具：Vue / React、Vite / Webpack、Git、VS Code',
+          '协作与基础：HTTP 协议、浏览器工作原理、RESTful 接口联调、SQL',
+        ],
+      },
+      {
+        heading: '项目经历',
+        content: [
+          '【项目一】· 学生二手交易平台（【时间段】）—— 负责商品展示与用户交互等核心模块，配合后端接口完成数据渲染，使用 Vite 搭建工程',
+          '【项目二】· 【项目名称】（【时间段】）—— 简述职责与成果，建议量化如「页面加载时间降低 XX%」「支持 XX 条商品数据」',
+        ],
+      },
+      {
+        heading: '求职方向',
+        content: ['前端开发实习 / Web 开发实习'],
+      },
+    ],
+    gapNotes: [
+      '模板中的【占位符】需替换为你的真实信息与可量化成果。',
+      '如目标岗位要求 TypeScript，建议补充一个 TS 练习项目后再投递。',
+    ],
+  },
+  null,
+  2,
+);
+
+/**
+ * 预置输出：演示模式「简历合并」—— 基于示例简历 + 示例 JD 的合并改写（脱敏）。
+ */
+export const DEMO_RESUME_MERGED_OUTPUT = JSON.stringify(
+  {
+    title: '前端开发实习生 · 匹配简历',
+    header: '【姓名】  |  【电话】  |  【邮箱】  |  西安',
+    summary:
+      '信息与计算科学专业本科生，具备扎实的编程基础和较强的学习能力，对前端开发有持续兴趣。熟悉 HTML/CSS/JavaScript 与 ES6+ 语法，了解 Vue / React 组件化开发；有完整的校园项目实践，具备页面交互设计、前端功能实现与前后端协作能力，能够快速适应团队开发环境。',
+    sections: [
+      {
+        heading: '教育背景',
+        content: [
+          '本科 · 信息与计算科学专业（预计 2027 年毕业）',
+          '相关课程：数据结构与算法、数据库原理、软件工程、Web 前端开发、Python / Java / C / C++ 程序设计',
+        ],
+      },
+      {
+        heading: '技能栈',
+        content: [
+          '前端开发：HTML、CSS、JavaScript（ES6+）',
+          '框架与工具：Vue / React、Git、VS Code',
+          '后端基础：Python、Java、SQL；接口调用与数据渲染',
+        ],
+      },
+      {
+        heading: '项目经历',
+        content: [
+          '学生二手交易平台开发：参与平台前端页面设计与交互实现，完成商品展示、用户操作及页面跳转等核心功能',
+          '配合后端接口完成数据展示与交互逻辑，使用 Git 进行多人协作，掌握分支管理与冲突处理',
+          '通过项目实践锻炼了前端功能拆分、界面交互实现、调试优化及协作开发能力',
+        ],
+      },
+      {
+        heading: '求职方向',
+        content: ['前端开发实习 / Web 开发实习'],
+      },
+    ],
+    gapNotes: [
+      'JD 加分项要求 TypeScript，当前简历未体现，建议补充学习或练习后更新简历。',
+      'JD 加分项提到 Vite / Webpack 构建工具，可在技能栈中补充你实际使用的工具链。',
+      '项目经历建议补充量化成果（如页面数量、数据量、性能提升），增强说服力。',
+    ],
+  },
+  null,
+  2,
+);

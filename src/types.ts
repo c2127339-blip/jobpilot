@@ -35,3 +35,25 @@ export interface GeneratedQuestions {
   /** 简历与 JD 的差距提示 */
   gapSuggestions: string[];
 }
+
+/** 简历的一个章节（如「项目经历」） */
+export interface ResumeSection {
+  /** 章节标题 */
+  heading: string;
+  /** 章节内容要点 / 段落 */
+  content: string[];
+}
+
+/** 生成的简历 */
+export interface GeneratedResume {
+  /** 标题，如「前端开发实习生 · 匹配简历」 */
+  title: string;
+  /** 顶部联系方式块（姓名 / 电话 / 邮箱，可留占位符） */
+  header: string;
+  /** 自我评价 */
+  summary: string;
+  /** 简历各章节 */
+  sections: ResumeSection[];
+  /** 与 JD 的匹配度说明 / 待补充项 */
+  gapNotes: string[];
+}

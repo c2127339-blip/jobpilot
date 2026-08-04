@@ -12,7 +12,8 @@
 npm install
 
 # 本地运行（演示模式）
-npm run demo
+npm run demo          # 面试问题演示
+npm run demo:resume   # 简历演示
 ```
 
 ## 提交 PR
@@ -28,6 +29,7 @@ npm run demo
 - 核心逻辑都在 `src/` 下，单一职责，见各文件顶部注释
 - 演示数据在 `src/demo-data.ts`；示例文件在 `examples/`
 - 新增 LLM provider 时，在 `src/llm.ts` 的 `resolveProviderConfig` 增加一条配置即可
+- 两个命令的主流程在 `src/run.ts`：`runResume`（简历）与 `runQuestions`（面试问题）
 
 ## 代码风格
 

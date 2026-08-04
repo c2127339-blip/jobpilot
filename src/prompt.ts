@@ -2,7 +2,7 @@
  * 构建 LLM 提示词（system + user）。
  * 约束 LLM 只基于简历/JD 中真实出现的内容出题，避免编造。
  */
-import type { Category, GeneratedQuestions, Question } from './types.js';
+import type { Category, GeneratedQuestions, GeneratedResume, Question } from './types.js';
 
 /** 合法的分类 key */
 const CATEGORY_KEYS: Category[] = ['project', 'tech', 'behavior', 'fit'];
@@ -162,4 +162,132 @@ export function parseQuestionsJson(raw: string): GeneratedQuestions {
 
 function isRecord(v: unknown): v is Record<string, any> {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
+}
+
+/**
+ * 简历生成的 system 提示词。
+ * @param isMerge true=基于已有简历合并改写；false=从 JD 生成理想候选人模板
+ */
+export function buildResumeSystemPrompt(isMerge: boolean): string {
+  if (isMerge) {
+    return `你是一名资深的前端技术面试官，同时也是专业的简历优化顾问。
+你的任务：根据目标岗位的【职位描述(J)】和求职者已有的【现有简历】，将现有简历改写成一份与 JD 高度匹配的简历。
+
+要求：
+1. 【重要】只改写结构、措辞、强调重点，绝对不要虚构求职者没有的经历、技能、项目或成果。
+2. 从 JD 中提取关键词（如技术栈、能力点、职责），在已有简历中把匹配项前置、用更精准的措辞表达。
+3. 对于 JD 要求但现有简历明显缺失的关键点，不要硬写进简历正文，而是放到 gapNotes 里说明「待补充」。
+4. 保留求职者的真实教育背景、技能、项目事实，仅优化表达。
+5. 用中文输出。
+
+输出要求：
+- 严格输出一个 JSON 对象（不要 markdown 代码块包裹，不要额外说明文字）。
+- JSON 结构如下：
+{
+  "title": "字符串，如『前端开发实习生 · 匹配简历』",
+  "header": "联系方式块，含姓名占位（如【姓名】）、电话、邮箱等",
+  "summary": "自我评价（2-4 句，突出与 JD 的匹配点）",
+  "sections": [
+    { "heading": "章节标题（如『教育背景』『技能栈』『项目经历』）", "content": ["要点1", "要点2"] }
+  ],
+  "gapNotes": ["JD 要求但简历缺失的关键点，2-4 条，如：简历未提及 XX，建议补充"]
+}`;
+  }
+
+  return `你是一名资深的前端技术面试官，也是专业的简历撰写顾问。
+你的任务：根据目标岗位的【职位描述(J)】和【职位要求】，从零生成一份「理想候选人简历模板」，供求职者参考、填空、改编。
+
+要求：
+1. 这是一份模板，内容应是「理想候选人」应具备的教育背景 / 技能栈 / 项目经历 / 自我评价，覆盖 JD 的要求。
+2. 项目经历可以写得像一份真实的参考案例，但字段值（公司、时间、具体数字）用占位符如 【公司名】【时间段】【成果数字】。
+3. header 中姓名、电话、邮箱等联系方式一律用占位符，如【姓名】【电话】【邮箱】。
+4. 结构清晰、可直接作为简历骨架使用，用中文输出。
+
+输出要求：
+- 严格输出一个 JSON 对象（不要 markdown 代码块包裹，不要额外说明文字）。
+- JSON 结构如下：
+{
+  "title": "字符串，如『前端开发实习生 · 理想候选人简历模板』",
+  "header": "联系方式块，全部用占位符，如【姓名】【电话】【邮箱】",
+  "summary": "自我评价（2-4 句，体现理想候选人对该岗位的匹配）",
+  "sections": [
+    { "heading": "章节标题（如『教育背景』『技能栈』『项目经历』）", "content": ["要点1（含占位符）", "要点2"] }
+  ],
+  "gapNotes": ["该岗位需要但求职者可能需自行补充的能力，2-3 条"]
+}`;
+}
+
+/** 简历生成的 user 提示词 */
+export function buildResumeUserPrompt(jd: string, existingResume?: string): string {
+  if (existingResume) {
+    return `请根据下面的职位描述(J)和现有简历，生成一份与 JD 高度匹配的合并改写简历。
+
+【职位描述(J)】
+${jd}
+
+【现有简历】
+${existingResume}
+
+请按 system 提示的要求输出 JSON。`;
+  }
+
+  return `请根据下面的职位描述(J)和职位要求，生成一份理想候选人简历模板。
+
+【职位描述(J)】
+${jd}
+
+请按 system 提示的要求输出 JSON。`;
+}
+
+/**
+ * 校验并解析 LLM 返回的简历 JSON（GeneratedResume 结构）。
+ * @throws Error 解析或结构校验失败时
+ */
+export function parseResumeJson(raw: string): GeneratedResume {
+  const json = extractJson(raw);
+  let data: unknown;
+  try {
+    data = JSON.parse(json);
+  } catch (err) {
+    throw new Error(
+      `LLM 返回内容不是合法 JSON，无法解析。原始内容片段：\n${json.slice(0, 300)}`,
+    );
+  }
+
+  if (!isRecord(data)) throw new Error('LLM 返回的 JSON 不是对象');
+  for (const field of ['title', 'header', 'summary'] as const) {
+    if (typeof data[field] !== 'string') {
+      throw new Error(`JSON 缺少字符串字段 ${field}`);
+    }
+  }
+  if (!Array.isArray(data.sections) || data.sections.length === 0) {
+    throw new Error('JSON 缺少非空数组字段 sections');
+  }
+
+  const sections = data.sections.map((sec, i) => {
+    if (!isRecord(sec)) throw new Error(`sections[${i}] 不是对象`);
+    if (typeof sec.heading !== 'string') {
+      throw new Error(`sections[${i}] 缺少字符串字段 heading`);
+    }
+    if (!Array.isArray(sec.content) || sec.content.length === 0) {
+      throw new Error(`sections[${i}] 缺少非空 content 数组`);
+    }
+    const content = sec.content.filter(
+      (s): s is string => typeof s === 'string',
+    );
+    if (content.length === 0) {
+      throw new Error(`sections[${i}].content 不是字符串数组`);
+    }
+    return { heading: sec.heading, content };
+  });
+
+  let gapNotes: string[] = [];
+  if (data.gapNotes !== undefined) {
+    if (!Array.isArray(data.gapNotes)) {
+      throw new Error('JSON 的 gapNotes 不是数组');
+    }
+    gapNotes = data.gapNotes.filter((s): s is string => typeof s === 'string');
+  }
+
+  return { title: data.title, header: data.header, summary: data.summary, sections, gapNotes };
 }
